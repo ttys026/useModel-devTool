@@ -265,17 +265,23 @@ const EMPTY_STATE = '暂无数据';
                 const { namespace, data, time, index } = e.detail || {};
                 const getTime = () => {
                     const dt = new Date(time);
-                    return `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`
+                    const [h,m,s] = [dt.getHours(),dt.getMinutes(),dt.getSeconds()]
+                    return `${h > 9 ? h : `0${h}`}:${m > 9 ? m : `0${m}`}:${s > 9 ? s : `0${s}`}`
                 };
 
                 const prev = (window._umi_useModel_dev_tool_log || {})[namespace][Number(index) - 1];
 
                 updateContent(`<p><b>${getTime()}「${namespace}」触发更新</b> <a id="umi_dev_tool_id_${namespace}_${index}" class="umi_dev_tool_print">打印 diff</a></p>`)
+                let somethingChange = false;
                 Object.entries(data || {}).map(([k, v]) => {
                     if(v !== ((stateCache[namespace] || {})[k] || (prev || {})[k])) {
+                        somethingChange = true;
                         updateContent(`<div><b>${k}</b> 发生了变化<br/>prev: ${(stateCache[namespace] || {})[k] || (prev || {})[k]},<br/>current: ${v}</div><br/>`)
                     }
                 });
+                if(!somethingChange) {
+                    updateContent('<div>与上次相比没有发生变化</div><br/>');
+                }
                 stateCache[namespace] = data;
                 var popover = container.data('bs.popover');
                 popover.setContent();
